@@ -1,0 +1,32 @@
+https://w.amazon.com/index.php/AWS/Teams/Proserve/Jam
+
+JAM Artifacts
+	- https://quip-amazon.com/LTxwAITNlK88/Jam-Artifact-Credits
+
+JAM Challenge Proposal
+--------------------------------------------------
+- https://issues.amazon.com/D25022878
+- https://quip-amazon.com/9EAaAP8irbOD/reinvent-Challenge-Builders-2021-New-Challenges
+- https://quip-amazon.com/F6YaAvxEXsRZ/GCCI-team-JAM-challenges#SGG9CAfdNJl
+
+c-69abbc5f
+	- SSH
+	- https://sim.amazon.com/issues/search?q=containingFolder%3A(c464acd9-3356-4a5f-8f61-eaeb1ff3df7e)+(%22NEW+SCENARIO+REQUEST%22)+(c-69abbc5f)&sort=lastUpdatedDate+desc&selectedDocument=f3c2f254-320a-468b-8f58-bf28ae1cb199
+	- https://bottlenose.aws.a2z.com/d-db1eed3d/c-69abbc5f
+
+- https://admin.jam.awsevents.com/challenges/unable-to-ssh/testing
+- https://collaborate-corp.amazon.com/nuxeo/ui/#!/browse/default-domain/workspaces/ProServe%20Goldemine%20Workspace/JAM%20Challenge%20%5BBackup%20Challenge%5D%20SSH...May%20I%20come%20in%3F%20
+
+
+WiCyS x AWS Jam 2021 - Facilitator
+--------------------------------------------------
+	- Happening on 21st July
+	- https://quip-amazon.com/lVm2AlaeYCjM/WiCyS-x-AWS-Jam-2021-Facilitator-Sign-Up
+	- Create Self-Assignment for Milestone
+		- https://aws-crm.my.salesforce.com/a1V4z000004lDfh
+	- https://aws-jam-docs.s3-us-west-2.amazonaws.com/facilitator-guide.pdf
+	- https://aws-jam-docs.s3-us-west-2.amazonaws.com/aws-jam-challenge-authoring-guide.pdf
+	- https://aws-jam-docs.s3-us-west-2.amazonaws.com/aws-jam-writing-style-guide.pdf
+
+
+

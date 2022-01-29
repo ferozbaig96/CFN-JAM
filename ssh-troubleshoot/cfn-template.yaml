@@ -1,0 +1,195 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Unable to SSH'
+Parameters:
+  # A Parameter named KeyName is required in order to receive the name of the KeyPair when deploying the challenge.
+  # The Parameter must be named KeyName to conform to AWS Jam convention. Any other name will not work.
+  KeyName:
+    Type: String
+    Description: Name for the keypair used to SSH into EC2 instances
+    # A default of "lab-key-pair" is required here to conform to AWS Jam convention. Any other default will not work.
+    Default: lab-key-pair
+  LatestAmiId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
+    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+Resources:
+  JAMIGW:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: JAMIGW
+  JAMVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.31.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: JAM-VPC
+  JAMIGWAttach:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref JAMVPC
+      InternetGatewayId: !Ref JAMIGW
+  JAMRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref JAMVPC
+      Tags:
+        - Key: Name
+          Value: JAMRouteTable
+  JAMRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref JAMVPCSubnet
+      RouteTableId: !Ref JAMRouteTable
+  JAMVPCSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref JAMVPC
+      CidrBlock: 10.31.0.0/24
+      AvailabilityZone: !Select 
+        - 0
+        - Fn::GetAZs: !Ref 'AWS::Region'
+      Tags:
+        - Key: Name
+          Value: JAM-VPC-Subnet
+  JAMSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: JAMSG
+      GroupDescription: JAMSG
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: JAMSGEgressRule
+          IpProtocol: '-1'
+      VpcId: !Ref JAMVPC
+      Tags:
+        - Key: Name
+          Value: JAMSG
+  # SecurityGroupIn:
+  #   Type: 'AWS::EC2::SecurityGroupIngress'
+  #   Properties:
+  #     GroupId: !Ref JAMSG
+  #     FromPort: '22'
+  #     IpProtocol: 6
+  #     SourceSecurityGroupId: !Ref JAMSG
+  #     ToPort: '22'
+  JAMEIP1:
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: JAMEIP1
+  JAMPrimaryNetworkInterface:
+    Type: 'AWS::EC2::NetworkInterface'
+    Properties:
+      Description: Primary Network Interface for EC2 Instance
+      GroupSet:
+        - !Ref JAMSG
+      SubnetId: !Ref JAMVPCSubnet
+      Tags:
+        - Key: Name
+          Value: JAMPrimaryInterface
+      SourceDestCheck: true
+  JAMEC2InstanceProfileRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:UpdateInstanceInformation'
+                  - 'ssmmessages:CreateControlChannel'
+                  - 'ssmmessages:CreateDataChannel'
+                  - 'ssmmessages:OpenControlChannel'
+                  - 'ssmmessages:OpenDataChannel'
+                Resource: '*'
+  JAMEC2InstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties: 
+      Path: "/"
+      Roles: 
+        - !Ref JAMEC2InstanceProfileRole
+  EC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      KeyName: !Ref KeyName 
+      ImageId: !Ref LatestAmiId
+      InstanceType: t2.micro
+      NetworkInterfaces:
+        - NetworkInterfaceId: !Ref JAMPrimaryNetworkInterface
+          DeviceIndex: '0'
+      AvailabilityZone: !GetAtt 
+        - JAMVPCSubnet
+        - AvailabilityZone
+      UserData:
+        Fn::Base64:
+          !Sub |
+            Content-Type: multipart/mixed; boundary="//"
+            MIME-Version: 1.0
+
+            --//
+            Content-Type: text/cloud-config; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
+            Content-Disposition: attachment; filename="cloud-config.txt"
+
+            #cloud-config
+            cloud_final_modules:
+            - [scripts-user, always]
+
+            --//
+            Content-Type: text/x-shellscript; charset="us-ascii"
+            MIME-Version: 1.0
+            Content-Transfer-Encoding: 7bit
+            Content-Disposition: attachment; filename="userdata.txt"
+
+            #!/bin/bash
+            # start amazon-ssm-agent which is pre-installed
+            sudo systemctl enable amazon-ssm-agent
+            sudo systemctl start amazon-ssm-agent
+            # stop sshd service
+            sudo service sshd stop
+            --//
+      Tags:
+        - Key: Name
+          Value: JAMEC2Instance
+  JAMEIPAllocation:
+    Type: 'AWS::EC2::EIPAssociation'
+    DependsOn:
+      - EC2Instance
+      - JAMIGWAttach
+    Properties:
+      AllocationId: !GetAtt 
+        - JAMEIP1
+        - AllocationId
+      NetworkInterfaceId: !Ref JAMPrimaryNetworkInterface
+Outputs:
+  KeyName:
+    Description: The SSH KeyPair Name
+    Value: !Ref KeyName
+  InstanceIpAddress:
+    Description: Public IP address of the EC2 instance
+    Value: !Ref JAMEIP1
+  InstanceId:
+    Description: Instance Id of the launched instance
+    Value: !Ref EC2Instance
+  VPCId:
+    Description: VPC Id of the VPC in which instance is launched
+    Value: !Ref JAMVPC
