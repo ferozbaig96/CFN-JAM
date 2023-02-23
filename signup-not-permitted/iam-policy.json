@@ -1,0 +1,39 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "lambda:InvokeFunction",
+                "lambda:UpdateFunctionCode",
+                "lambda:GetFunction"
+            ],
+            "Resource": [
+                "arn:aws:lambda:*:*:function:LambdaJam",
+                "arn:aws:lambda:*:*:function:LambdaJam:*"
+            ],
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "lambda:ListFunctions",
+                "lambda:GetAccountSettings"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "cognito-idp:ListTagsForResource",
+                "cognito-idp:ListUserPoolClients",
+                "cognito-idp:ListUserPools",
+                "cognito-idp:ListUsers",
+                "cognito-idp:DescribeUserPool",
+                "cognito-idp:DescribeUserPoolClient",
+                "cognito-idp:DescribeUserPoolDomain",
+                "cognito-idp:UpdateUserPool"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}

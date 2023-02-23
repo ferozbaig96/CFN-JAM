@@ -1,0 +1,123 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'Signup Not Permitted'
+Resources:
+  UserPool:
+    Type: 'AWS::Cognito::UserPool'
+    Properties:
+      UserPoolName: Userpool-jam
+      AutoVerifiedAttributes:
+        - email
+      MfaConfiguration: 'OFF'
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+  UserPoolClient:
+    Type: 'AWS::Cognito::UserPoolClient'
+    Properties:
+      ClientName: UserpoolClient-jam
+      GenerateSecret: false
+      AllowedOAuthFlows:
+        - implicit
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthScopes:
+        - phone
+        - email
+        - openid
+        - profile
+        - aws.cognito.signin.user.admin
+      CallbackURLs:
+        - 'https://google.com'
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      SupportedIdentityProviders:
+        - COGNITO
+      UserPoolId: !Ref UserPool
+  LambdaJam:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        ZipFile: |
+          import boto3 
+          def handler(event, context):
+            # TODO implement
+            client = boto3.client('cognito-idp'); 
+            response = client.sign_up(
+              ClientId='String',          # The ID of the client associated with the user pool. 
+              Username='String',          # The user name of the user you wish to register.
+              Password='String',          # The password of the user you wish to register.
+              UserAttributes=[
+                {
+                  'Name': 'string',       # The attribute for the user (e.g. 'email')
+                  'Value': 'string'       # The value for the user attribute (e.g. email id)
+                }
+              ]
+            )
+            print(response)
+            return response
+      Description: AWS Lambda function
+      FunctionName: LambdaJam
+      Handler: index.handler
+      MemorySize: 256
+      Role: !GetAtt 
+        - LambdaIamRole
+        - Arn
+      Runtime: python3.8
+      Timeout: 60
+  LambdaIamRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Path: /
+      Policies:
+        - PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Effect: Allow
+                Resource:
+                  - !Sub >-
+                    arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/LambdaJam:*
+          PolicyName: LogsLambda
+        - PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                  - 'cognito-idp:*'
+                Effect: Allow
+                Resource: !GetAtt 
+                  - UserPool
+                  - Arn
+          PolicyName: CognitoLambda
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+  UserPoolName:
+    Value: Userpool-jam
+  LambdaJam:
+    Value: !GetAtt 
+      - LambdaJam
+      - Arn
+  LambdaIamRole:
+    Value: !Ref LambdaIamRole
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
+  Region:
+    Value: !Ref 'AWS::Region'
