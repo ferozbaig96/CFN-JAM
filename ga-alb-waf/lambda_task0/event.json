@@ -1,0 +1,6 @@
+{
+  "stackOutputParams": {
+    "GlobalAcceleratorListenerArn": "arn:aws:globalaccelerator::784439035548:accelerator/5062e53e-fb26-4f1f-ad8f-fddbcc4308ff/listener/47d9e994",
+    "ALBArn": "arn:aws:elasticloadbalancing:us-east-1:784439035548:loadbalancer/app/PublicALB/57cfb34849171523"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "stackOutputParams": {
+    "WAFArn": "arn:aws:wafv2:us-east-1:784439035548:regional/webacl/SecurityWAF/0abda5db-a427-40ad-88e3-2b152eeb5c8c",
+    "ALBArn": "arn:aws:elasticloadbalancing:us-east-1:784439035548:loadbalancer/app/PublicALB/57cfb34849171523"
+  }
+}
