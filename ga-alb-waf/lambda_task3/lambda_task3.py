@@ -53,3 +53,11 @@ def lambda_handler(event, context):
                 "progressPercent": 0,  # optional: any whole number between 0 and 100
                 "metadata": {},  # optional: a map of key:value attributes to display to the team
             }
+
+    return {
+        "completed": completed,  # required: whether this task is completed
+        "message": message,  # required: a message to display to the team indicating progress or next steps
+        "progressPercent": 0,  # optional: any whole number between 0 and 100
+        "metadata": {},  # optional: a map of key:value attributes to display to the team
+    }
+
