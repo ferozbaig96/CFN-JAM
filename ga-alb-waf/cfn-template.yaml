@@ -24,7 +24,7 @@ Resources:
       VpcId: !Ref VPC
       CidrBlock: 10.0.1.0/24
       MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select 
+      AvailabilityZone: !Select
         - 0
         - Fn::GetAZs: !Ref 'AWS::Region'
 
@@ -34,7 +34,7 @@ Resources:
       VpcId: !Ref VPC
       CidrBlock: 10.0.2.0/24
       MapPublicIpOnLaunch: true
-      AvailabilityZone: !Select 
+      AvailabilityZone: !Select
         - 1
         - Fn::GetAZs: !Ref 'AWS::Region'
 
@@ -101,6 +101,9 @@ Resources:
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
           CidrIp: 0.0.0.0/0
 
   WAF:
